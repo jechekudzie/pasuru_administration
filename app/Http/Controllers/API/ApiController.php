@@ -144,7 +144,7 @@ class ApiController extends Controller
         ];
 
         //permissions suffixes
-        $suffixes = ['create', 'read', 'update', 'delete'];
+        $suffixes = ['create', 'view', 'update', 'delete'];
 
         //create list of all permissions by combining prefix and suffix
         foreach ($moduleInfo as $module) {
@@ -179,4 +179,6 @@ class ApiController extends Controller
         $role->organization = Organisation::findOrFail($role->organization_id);
         return response()->json($role);
     }
+
+
 }

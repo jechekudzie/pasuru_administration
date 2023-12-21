@@ -27,3 +27,4 @@ Route::get('/administration/roles/{id}/{type}', [App\Http\Controllers\API\ApiCon
 Route::get('/administration/users/{id}/{type}', [App\Http\Controllers\API\ApiController::class, 'fetchOrganisationUsers']);
 Route::get('/administration/roles/{id}', [App\Http\Controllers\API\ApiController::class, 'fetchRole']);
 Route::get('/administration/permissions/{id}', [App\Http\Controllers\API\ApiController::class, 'fetchRolePermissions']);
+Route::post('/administration/permissions/update', [App\Http\Controllers\API\ApiController::class, 'updateRolePermissions']);

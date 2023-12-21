@@ -250,7 +250,7 @@
                             <tr>
                                 <th class="whitespace-nowrap">Module</th>
                                 <th class="whitespace-nowrap">Create</th>
-                                <th class="whitespace-nowrap">Read</th>
+                                <th class="whitespace-nowrap">View</th>
                                 <th class="whitespace-nowrap">Update</th>
                                 <th class="whitespace-nowrap">Delete</th>
                             </tr>
@@ -409,12 +409,12 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
-                    $('#permissions_slideover').find('tbody').empty();
+                    $('#modal-large').find('tbody').empty();
                     $.each(data, function (index, permission) {
-                        $('#permissions_slideover').find('tbody').append(`<tr>
+                        $('#modal-large').find('tbody').append(`<tr>
                         <td>${permission.module}</td>
                         <td><input data-role="${roleid}" data-module="${permission.prefix}" data-permission="create" class="permission-checkbox" type="checkbox" ${permission.permissions.create ? 'checked' : ''}></td>
-                        <td><input data-role="${roleid}" data-module="${permission.prefix}" data-permission="read" class="permission-checkbox" type="checkbox" ${permission.permissions.read ? 'checked' : ''}></td>
+                        <td><input data-role="${roleid}" data-module="${permission.prefix}" data-permission="view" class="permission-checkbox" type="checkbox" ${permission.permissions.read ? 'checked' : ''}></td>
                         <td><input data-role="${roleid}" data-module="${permission.prefix}" data-permission="update" class="permission-checkbox" type="checkbox" ${permission.permissions.update ? 'checked' : ''}></td>
                         <td><input data-role="${roleid}" data-module="${permission.prefix}" data-permission="delete" class="permission-checkbox" type="checkbox" ${permission.permissions.delete ? 'checked' : ''}></td>class="permission-checkbox" type="checkbox" ${permission.permissions.delete ? 'checked' : ''} ></td>
                     </tr>`);
@@ -423,6 +423,25 @@
             });
         });
 
+        //update permission on checkbox click function
+        $(document).on('click', '.permission-checkbox', function () {
+            var roleid = $(this).data('role');
+            var module = $(this).data('module');
+            var permission = $(this).data('permission');
+            var checked = $(this).is(':checked');
+            $.ajax({
+                url: '/api/administration/permissions/update',
+                type: 'POST',
+                data: {
+                    'checked': checked,
+                    'role_id': roleid,
+                    'permission': module + '.' + permission,
+                },
+                success: function (data) {
+                    console.log(data);
+                }
+            });
+        });
 
     </script>
 @endpush

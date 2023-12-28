@@ -180,5 +180,18 @@ class ApiController extends Controller
         return response()->json($role);
     }
 
+    public function destroyUser($user, $organisation)
+    {
+        DB::table('organisation_users')->where('user_id', $user)->where('organisation_id', $organisation)->delete();
+        User::findOrFail($user)->delete();
+        return response()->json(['message' => 'User deleted successfully']);
+    }
+
+    public function fetchOrganisationDetails($id)
+    {
+        $organisation = Organisation::findOrFail($id);
+        $organisation->type = OrganisationType::findOrFail($organisation->organisation_type_id);
+        return response()->json($organisation);
+    }
 
 }

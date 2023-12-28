@@ -48,3 +48,4 @@ Route::get('/administration/organisations/template', [AdminController::class, 't
 Route::post('/administration/templates/store', [AdminController::class, 'storeTemplate'])->name('admin.organisations.saveTemplate');
 Route::post('/administration/organisations/instances/store', [AdminController::class, 'addNewOrganisation'])->name('admin.organisations.saveInstance');
 Route::post('/administration/organisations/role', [AdminController::class, 'addOrganisationRole'])->name('admin.organisations.saveRole');
+Route::post('/administration/organisations/users', [AdminController::class, 'addOrganisationUser'])->name('admin.organisations.saveUser');

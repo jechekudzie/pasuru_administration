@@ -90,9 +90,26 @@
                                         <label class="form-label" for="physical_address">Physical Address</label>
                                     </div>
                                 </div>
-                                <div class="mb-4">
+                                <div class="mb-4" id="image-div">
                                     <label class="form-label" for="example-file-input">Upload Company Logo</label>
                                     <input class="form-control" type="file" name="logo" id="example-file-input">
+                                </div>
+                                <div class="mb-4 col-6 animated fadeIn" style="display: none" id="image-preview">
+                                    <div class="options-container fx-item-zoom-in fx-overlay-zoom-in">
+                                        <img class="img-fluid options-item" src="#" alt="">
+                                        <div class="options-overlay bg-white-90">
+                                            <div class="options-overlay-content">
+                                                <h3 class="h4 text-black-75 mb-1">Logo</h3>
+                                                <h4 class="h6 text-black-50 mb-3">Update or Delete</h4>
+                                                <a class="btn btn-sm btn-primary" href="javascript:void(0)">
+                                                    <i class="fa fa-pencil-alt opacity-50 me-1"></i> Edit
+                                                </a>
+                                                <a class="btn btn-sm btn-danger" href="javascript:void(0)">
+                                                    <i class="fa fa-times opacity-50 me-1"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <input name="parent" type="hidden" id="parent_id">
                                 <input name="id" type="hidden" id="id_id">
@@ -114,6 +131,7 @@
                                     <div class="block-content">
                                         <!-- Form Labels on top - Default Style -->
                                         <form class="mb-5" action="{{ url('administration/organisations/role') }}"
+                                              id="addRoleForm"
                                               method="POST">
                                             @csrf
                                             <div class="mb-4">
@@ -157,7 +175,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                     <div class="tab-pane fade" id="btabs-users" role="tabpanel"
                          aria-labelledby="btabs-users" tabindex="0">
@@ -166,7 +183,8 @@
                                 <div class="block block-rounded">
                                     <div class="block-content">
                                         <!-- Form Labels on top - Default Style -->
-                                        <form class="mb-5" action="{{ url('administration/organisations/role') }}"
+                                        <form class="mb-5" id="addUserForm"
+                                              action="{{ url('administration/organisations/users') }}"
                                               method="POST">
                                             @csrf
                                             <div class="mb-4">
@@ -184,9 +202,9 @@
                                                 <select id="org-role-id" class="form-select"
                                                         name="role_id"></select>
                                             </div>
-                                            <input type="hidden" name="organisation_id" id="role_organisation_id">
+                                            <input type="hidden" name="organisation_id" id="user_organisation_id">
                                             <div class="mb-4">
-                                                <button type="submit" class="btn btn-primary">Create Role</button>
+                                                <button type="submit" class="btn btn-primary">Create User</button>
                                             </div>
                                         </form>
                                         <!-- END Form Labels on top - Default Style -->
@@ -205,12 +223,12 @@
                                             <thead>
                                             <tr>
                                                 <th>#</th>
-                                                <th>User Name</th>
-                                                <th class="d-none d-sm-table-cell">User Role</th>
+                                                <th>Name</th>
+                                                <th>Role</th>
                                                 <th>Actions</th>
                                             </tr>
                                             </thead>
-                                            <tbody id="rolesTable">
+                                            <tbody id="userAccountsTable">
 
                                             </tbody>
                                         </table>
@@ -220,7 +238,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -265,6 +282,38 @@
     </div>
     <!-- END Large Modal -->
 
+    <!-- Small Modal -->
+    <div class="modal" id="modal-small" tabindex="-1" role="dialog" aria-labelledby="modal-small" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="block block-rounded shadow-none mb-0">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Confirm your action</h3>
+                        <div class="block-options">
+                            <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="block-content fs-sm">
+                        <p>
+                            Are you sure you want to delete this record? This action cannot be undone.
+                        </p>
+                    </div>
+                    <div class="block-content block-content-full block-content-sm text-end border-top">
+                        <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END Small Modal -->
+
 @endsection
 
 @push('scripts')
@@ -293,7 +342,10 @@
                 $('#parent').val(parentId);
                 $('#id_id').val(node_id);
                 $('#role_organisation_id').val(node_id);
+                $('#user_organisation_id').val(node_id);
+                fetchOrganisationDetails(node_id);
                 fetchOrganizationRoles(node_id, type);
+                fetchOrganizationUsers(node_id, type);
             }
         });
 
@@ -301,7 +353,6 @@
             event.preventDefault();
             var result = tree.getCheckedNodes();
             $('#parent_id').val(result.join());
-
             //submit form with ajax
             $.ajax({
                 url: '/administration/templates/store',
@@ -389,12 +440,47 @@
                         $('#userAccountsTable').append(`<tr>
                         <td>${index + 1}</td>
                         <td>${user.user.name}</td>
-                        <td>${user.user.email}</td>
                         <td>${user.role.name}</td>
-                        <td>
-                            <a href="#">Revoke</a>
+                        <td class="text-center">
+                          <div class="btn-group">
+                            <button data-user="${user.user.id}"
+                                    data-organisation="${id}"
+                                    data-type="${type}"
+                                    type="button"
+                                    class="btn btn-sm btn-danger deleteuser"
+                                    data-bs-toggle="tooltip" title="Delete">
+                              <i class="fa fa-trash"></i>
+                            </button>
+                          </div>
                         </td>`);
                     });
+                }
+            });
+        }
+
+        function fetchOrganisationDetails(id) {
+            $.ajax({
+                url: '/api/administration/organisations/details/' + id,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    $('#name').val(data.name);
+                    $('#contact_person').val(data.contact_person);
+                    $('#contact_number').val(data.contact_number);
+                    $('#contact_email').val(data.contact_email);
+                    $('#physical_address').val(data.physical_address);
+
+                    //show image preview
+                    if (data.logo) {
+                        $('#image-preview').show();
+                        $('#image-div').hide();
+                        $('#image-preview').find('img').attr('src', '/uploads/organisation/logos/' + data.logo);
+                    } else {
+                        $('#image-preview').hide();
+                        $('#image-div').show();
+                    }
+
                 }
             });
         }
@@ -441,6 +527,53 @@
                     console.log(data);
                 }
             });
+        });
+
+        //add role form submit
+        $('#addRoleForm').submit(function (event) {
+            event.preventDefault();
+            $.ajax({
+                url: '/administration/organisations/role',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (data) {
+                    $('#addRoleForm').trigger('reset');
+                    fetchOrganizationRoles(data.organisation_id, data.type);
+                }
+            });
+        });
+
+        //add user form submit
+        $('#addUserForm').submit(function (event) {
+            event.preventDefault();
+            $.ajax({
+                url: '/administration/organisations/users',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (data) {
+                    $('#addUserForm').trigger('reset');
+                    fetchOrganizationUsers(data.organisation_id, data.type);
+                }
+            });
+        });
+
+        //delete user function with modal confirmation
+        $(document).on('click', '.deleteuser', function () {
+            var user_id = $(this).data('user');
+            var organisation_id = $(this).data('organisation');
+            var type = $(this).data('type');
+            $('#modal-small').modal('show');
+
+            $('#modal-small').find('.btn-danger').click(function () {
+                $.ajax({
+                    url: '/api/administration/users/' + user_id + '/' + organisation_id,
+                    type: 'DELETE',
+                    success: function (data) {
+                        fetchOrganizationUsers(organisation_id, type);
+                    }
+                });
+            });
+
         });
 
     </script>

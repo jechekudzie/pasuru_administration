@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/administration/organisations/templates', [ApiController::class, 'fetchTemplate'])->name('admin.organisations.create');
 Route::get('/administration/organisations/instances', [ApiController::class, 'fetchOrganisationInstances'])->name('admin.organisations.fetchInstances');
+Route::get('/administration/organisations/details/{id}', [ApiController::class, 'fetchOrganisationDetails'])->name('admin.organisations.details');
 
 
 Route::get('/administration/roles/{id}/{type}', [App\Http\Controllers\API\ApiController::class, 'fetchOrganisationRoles']);
@@ -28,3 +29,6 @@ Route::get('/administration/users/{id}/{type}', [App\Http\Controllers\API\ApiCon
 Route::get('/administration/roles/{id}', [App\Http\Controllers\API\ApiController::class, 'fetchRole']);
 Route::get('/administration/permissions/{id}', [App\Http\Controllers\API\ApiController::class, 'fetchRolePermissions']);
 Route::post('/administration/permissions/update', [App\Http\Controllers\API\ApiController::class, 'updateRolePermissions']);
+
+//delete routes
+Route::delete('/administration/users/{user}/{organisation}/', [ApiController::class, 'destroyUser'])->name('admin.organisations.deleteUser');

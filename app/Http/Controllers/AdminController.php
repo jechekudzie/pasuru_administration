@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Organisation;
 use App\Models\OrganisationType;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
 class AdminController extends Controller
 {
+    public function index()
+    {
+        return view('administration.organisations.create');
+    }
+
     public function create()
     {
         return view('administration.organisations.create');
@@ -94,5 +102,30 @@ class AdminController extends Controller
         $role->save();
         return response()->json($role);
 
+    }
+
+    public function addOrganisationUser(Request $request)
+    {
+        $user = new User([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make('password'),
+        ]);
+        $user->save();
+
+        //get the role and all permissions and return them
+        $role = Role::findOrFail($request->role_id);
+
+        //assign user to role
+        $user->roles()->attach($role, ['organisation_id' => $request->organisation_id]);
+
+        //db insert into organisation_users table
+        DB::table('organisation_users')->insert([
+            'user_id' => $user->id,
+            'organisation_id' => $request->organisation_id,
+            'role_id' => $role->id,
+        ]);
+
+        return response()->json($role);
     }
 }
